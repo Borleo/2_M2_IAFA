@@ -1,0 +1,33 @@
+db.users.insertOne({ 
+		_id: 1, 
+		name: "toto",
+		nbFollowers: 3,
+		tweets[
+
+			[ id: 10, 
+			text: "Ceci est mon premier tweet",
+			createdat: new Date("2016-02-10 10:50:42"),
+			hashtags["youpi","bac à sable" ]
+			 ]
+
+			[ id: 11, 
+			text: "Ceci est mon deuxième  tweet",
+			createdat: new Date("2016-02-10 10:54:42"),
+			hashtags["youpi","bac à sable" ]
+			]
+
+			[ id: 12, 
+			text: "Ceci est mon troisième tweet",
+			createdat: new Date("2016-02-10 10:56:42"),
+			hashtags["youpi","bac à sable" ]
+			]
+
+			[ id: 13, 
+			text: "Ceci est mon quatrième tweet",
+			createdat: new Date("2016-02-10 10:58:42"),
+			hashtags["youpi","bac à sable" ]
+			]
+	]
+   }
+}
+

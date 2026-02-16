@@ -1,0 +1,79 @@
+https://docs.ros.org/en/kilted/Tutorials/Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.html
+
+ros2 run turtlesim turtlesim_node
+ros2 run turtlesim turtle_teleop_key
+ros2 param list --no-daemon
+echo $ROS_DISTRO
+ros2 daemon start
+ros2 node list
+ros2 parameter list
+ros2 param get <node_name> <parameter_name>
+ros2 param set <node_name> <parameter_name> <value>
+ros2 param dump turtlesim 
+ros2 action list
+ros2 node info /teleop_turtle # afficher la liste des actions proposées par un nœud
+ros2 node info /turtlesim    # afficher la liste des actions proposées par un nœud
+# exécuter l'une après l'autre
+ros2 interface show turtlesim/action/RotateAbsolute
+ros2 action send_goal /turtle1/rotate_absolute turtlesim/action/RotateAbsolute "{theta: 1.57}"
+ros2 action send_goal /turtle1/rotate_absolute turtlesim/action/RotateAbsolute "{theta: -1.57}" --feedback
+# 
+ros2 action list   -t
+ros2 action info /turtle1/rotate_absolute 
+
+cd ~/ros2_ws
+colcon build
+source install/setup.zsh
+ros2 launch multisim multisim.launch.py
+
+ros2 topic list
+ros2 bag record --topics
+ros2 bag record /turtle1/cmd_vel
+
+ros2 bag record --topics /turtle1/cmd_vel # enegistrement d'une commande
+ros2 bag record -o subset  /turtle1/cmd_vel /turtle1/pose # enregistrement de plusieurs commandes
+
+# 3.3 Diviser l'enregistrement en plusieurs fichiers
+ros2 bag record -o subset_split -d 5  /turtle1/cmd_vel /turtle1/pose 
+
+ros2 bag info nom_fichier 
+
+#Jouer avec un seul sac
+ros2 bag play subset
+
+
+ros2 service type /reset # les deux equivalent 
+ros2 service list -t   
+ros2 service call /reset type # issu de service list -t
+ros2 service call /reset std_srvs/srv/Empty   
+
+
+# Jouer avec plusieurs bags
+# créer deux instances terminales
+ros2 bag record -o subset_cmd_vel /turtle1/cmd_vel
+ros2 bag record -o subset_pose --topics /turtle1/pose
+# Déplacez la tortue comme vous l'avez fait précédemment, puis terminez les deux enregistrements 
+# Pour que ces deux enregistrements soient lus en parallèle et synchronisés, appelez la commande
+ros2 bag play -i subset_cmd_vel -i subset_pose
+
+# Gestion des données de service
+# Configuration
+Vous enregistrerez les données de service entre introspection_client le introspection_serviceclient
+et le serveur, puis vous les afficherez et les relirez ultérieurement. 
+
+Pour enregistrer ces données, l'option correspondante doit être activée sur le nœud.Service Introspection
+ros2 run demo_nodes_cpp introspection_service --ros-args -p service_configure_introspection:=contents
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,276 @@
+%**************************************************************************
+% Author: Oumaima El Mansouri (2019 Oct.)
+% University of Toulouse, IRIT/INP-ENSEEIHT
+% Email: oumaima.el-mansouri@irit.fr
+% ---------------------------------------------------------------------
+% Copyright (2020): Oumaima El Mansouri, Fabien Vidal, Adrian~Basarab, Denis Kouamé, Jean-Yves Tourneret.
+% 
+% Permission to use, copy, modify, and distribute this software for
+% any purpose without fee is hereby granted, provided that this entire
+% notice is included in all copies of any software which is or includes
+% a copy or modification of this software and in all copies of the
+% supporting documentation for such software.
+% This software is being provided "as is", without any express or
+% implied warranty.  In particular, the authors do not make any
+% representation or warranty of any kind concerning the merchantability
+% of this software or its fitness for any particular purpose."
+% ---------------------------------------------------------------------
+% 
+% This set of MATLAB files contain an implementation of the algorithms
+% described in the following paper (Without backtracking step):
+% 
+% [1] EL MANSOURI, Oumaima, VIDAL, Fabien, BASARAB, Adrian, et al. Fusion of magnetic resonance and ultrasound images 
+% for endometriosis detection. IEEE Transactions on Image Processing, 2020, vol. 29, p. 5324-5335.
+%
+% ---------------------------------------------------------------------
+%************************************************************************** 
+%%
+close all
+clear all
+clc
+
+addpath ./utils;
+addpath ./images;
+addpath ./synthetic;
+
+
+%% Load or read images ( phantom)
+% if needed resize MRI and US images (Nus = d*Nmri), in this example d = 6
+% (d is an integer)
+%load('images/irm.mat'); %MRI image
+load('images/us.mat');% US image
+load('images/ssd_result3.mat');
+irm = ssd_result3;
+figure; imshow(irm,[]);
+figure; imshow(us,[]);
+
+%% Synthetic data
+% if needed resize MRI and US images (Nus = d*Nmri), in this example d = 6
+% (d is an integer)
+%load('images/irm.mat'); %MRI image
+load('synthetic/us_simule.mat');% US image us_poly_logR_spline.mat%
+load('synthetic/result_simu1.mat');
+irm = result_simu1;
+us = us_simule;
+figure; imshow(irm,[]);
+figure; imshow(us,[]);
+
+%% Load or read images ( real data)
+% if needed resize MRI and US images (Nus = d*Nmri), in this example d = 6
+% (d is an integer)
+%load('images/irm.mat'); %MRI image
+load('images/US_reelle.mat');% US image
+load('images/result_spline1.mat');%load('images/init_mi256_2.mat'); %load('images/irm_reelle.mat');
+irm = result_spline1; %init;
+us=US;
+us = flip(US,2);
+us = rot90(us);
+us = imresize(us,[300 400]);
+figure; imshow(irm,[]);
+figure; imshow(us,[]);
+
+%% Manual translation 
+%irm = imtranslate(irm,[0, -25]);
+%% Crop the tumor only
+[cr_irm,rect] = imcrop(irm);
+[cr_us,rect2] = imcrop(us);
+figure; imshow(cr_irm,[]);
+figure; imshow(cr_us,[]);
+us = imresize(cr_us,[200 200]);
+irm = imresize(cr_irm,[200 200]);
+figure; imshow(irm,[]);
+figure; imshow(us,[]);
+%% Interpolation
+% hold on;
+% [X,Y] = ginput; % Coordinates from the plotted image, press enter when enough points are selected
+% X = [X; X(1)];
+% Y = [Y; Y(1)];
+% X = X';
+% Y = Y';
+% % Cubic spline data interpolation
+% [tInterp, xyInterp] = spline_interpolation(X,Y);
+% % Show the result
+% plot(xyInterp(1,:),xyInterp(2,:),'b');
+
+%% Test imregister
+figure,
+imshowpair(irm,us,"Scaling","joint")
+[optimizer,metric] = imregconfig("multimodal")
+optimizer.InitialRadius = 0.0009;
+optimizer.Epsilon = 1.5e-4 %1.5e-4;
+optimizer.GrowthFactor =1.01% 1.01;
+optimizer.MaximumIterations = 1000; %300;
+movingRegistered = imregister(irm,us,"affine",optimizer,metric);
+
+figure,
+imshowpair(movingRegistered,us,"Scaling","joint")
+figure; imshow(movingRegistered,[])
+irm = movingRegistered;
+%% Suite
+% Compute the polynomial coefficients
+estimate_c;
+output_args = cest;
+c = abs(output_args);
+
+%% Image normalization
+%linear normalization
+%ym = double(irm)./double(max(irm(:)));
+ym = irm;
+yu=us;      %just added this for the reel data, otherwise normalize
+
+%yu = double(us)./double(max(us(:)));
+
+%% Display observations
+
+figure; imshow(irm,[]); title 'MRI'
+figure; imshow(us,[]); title 'US'
+
+%% Initialization of PALM
+
+%d=6;                      %d=6; %MRI and US must have the same size
+%xm0 = imresize(ym,d,'bicubic'); %MRI bicubic interpolation
+
+xm0 = ym;
+%ym = imresize(xm0,1/6,'bicubic');
+%xm0 = ym;
+
+
+figure; imshow(xm0,[]);
+
+
+net = denoisingNetwork('DnCNN');
+xu0 = denoiseImage(yu,net); %US denoising
+figure; imshow(xu0,[]);
+
+%save("us_denoising.mat","xu0")
+
+%load("us_denoising.mat")
+
+%% Regularization parameters (fantom)
+% Tune these parameters for PALM convergence
+tau1 = 1e-12; 
+tau2 =3e-6; %1e-4 ; %1e-4;
+tau3 = 2e-6; %4;
+tau4 = 1e-5; %1e-5; %5;%1e-12;%-4
+%% synthetic data
+tau1 = 1e-5;%12%5;             %-5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% paramètre IRM (influence echo) %%%%%%
+tau2 =5e-1%3e-6;               %%%%%%%% paramètre US (influence observation) %%%%
+tau3 = 2e-2;           %1e-4   %%%%%%%%%% paramètre US (influence TV) %%%%%%%%
+tau4 = 1e-5;   
+
+%% Regularization parameters (reel data)
+% Tune these parameters for PALM convergence
+tau1 = 1e-5;             %-5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% paramètre IRM (influence echo) %%%%%%
+tau2 =3e-6;               %%%%%%%% paramètre US (influence observation) %%%%
+tau3 = 1e-4;           %1e-4   %%%%%%%%%% paramètre US (influence TV) %%%%%%%%
+tau4 = 1e-3;          %-4   %%%% paramètre US (influence IRM) %%
+%% fusion with splines
+
+tau1 = 1e-5;             %-5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% paramètre IRM (influence echo) %%%%%%
+tau2 =3e-6;               %%%%%%%% paramètre US (influence observation) %%%%
+tau3 = 2e-6;           %1e-4   %%%%%%%%%% paramètre US (influence TV) %%%%%%%%
+tau4 = 2e-6;          %-4   %%%% paramètre US (influence IRM) %%
+
+%% Fusion of MRI and US images
+[x2] =FusionPALM(ym,xu0,c,tau1, tau2, tau3, tau4, true);
+
+%% RMSE
+[n1,n2]=size(xu0);
+RMSE = sqrt((sum(sum((yirm - us).^2)))/(n1*n2))
+%RMSE = sqrt(mean((yirm(:) - x2(:)).^2))
+
+%%
+% RMSE
+rmse_us1 = sqrt(mean((x2 - us1_gt).^2,'all'))
+rmse_despeckeled_us1 = sqrt(mean((xu0 - us1_gt).^2,'all'))
+rmse_mri1 = sqrt(mean((x2 - irm1_gt).^2,'all'))
+rmse_sr_mri1 = sqrt(mean((xm0 - irm1_gt).^2,'all'))
+
+% PSNR
+psnr_us1 = 20*log10(max(max(x2(:)),max(us1_gt(:))) / rmse_us1)
+psnr_despeckeled_us1 = 20*log10(max(max(xu0(:)),max(us1_gt(:))) / rmse_despeckeled_us1)
+psnr_mri1 = 20*log10(max(max(x2(:)),max(irm1_gt(:))) / rmse_mri1)
+psnr_sr_mri1 = 20*log10(max(max(xm0(:)),max(irm1_gt(:))) / rmse_sr_mri1)
+
+% ISNR
+isnr_us1 = 10*log10(norm(xm0 - us1_gt)/norm(x2 - us1_gt)^2)
+isnr_despeckeled_us1 = 10*log10(norm(xm0 - us1_gt)/norm(xu0 - us1_gt)^2)
+isnr_mri1 = 10*log10(norm(xm0 - irm1_gt)/norm(x2 - irm1_gt)^2)
+isnr_sr_mri1 = 10*log10(norm(reshape(xm0 - irm1_gt,1,[]))/norm(reshape(xm0 - irm1_gt,1,[]))^2)
+
+% MSSIM
+[mssim_us1,~] = ssim(fusion_us,us1_gt,[0.01 0.03],fspecial('gaussian', 11, 1.5),1)
+[mssim_despeckeled_us1,~] = ssim(xu0,us1_gt,[0.01 0.03],fspecial('gaussian', 11, 1.5),1)
+[mssim_mri1,~] = ssim(fusion_us,irm1_gt,[0.01 0.03],fspecial('gaussian', 11, 1.5),1)
+[mssim_sr_mri1,~] = ssim(xm0,irm1_gt,[0.01 0.03],fspecial('gaussian', 11, 1.5),1)
+%% CNR AND PIXEL INTENSITIES
+%%MRI
+num_col = 280; % column of interest
+xu0 = yu; %%%%%%%%%%%%%%%%%%%%%%%
+% extracting the columns
+col_us = xu0(100:500,num_col);
+col_irm = xm0(100:500,num_col);
+col_fusion = x2(100:500,num_col);
+%col_fusion_poly = fpoly(100:500,num_col);
+
+% plot %plot(100:500,(col_irm-min(col_irm))/(max(col_irm)-min(col_irm)),'k');
+
+figure,
+plot(100:300,(col_irm-min(col_irm))/(max(col_irm)-min(col_irm)),'k');
+hold on;
+plot(100:300,(col_us-min(col_us))/(max(col_us)-min(col_us)),'g');
+hold on;
+plot(100:300,(col_fusion-min(col_fusion))/(max(col_fusion)-min(col_fusion)),'r');
+% hold on;
+% line([127 127], get(gca, 'ylim'));
+% line([283 283], get(gca, 'ylim'));
+% line([297 297], get(gca, 'ylim'));
+% line([463 463], get(gca, 'ylim'));
+%plot(100:500,(col_fusion_poly-min(col_fusion_poly))/(max(col_fusion_poly)-min(col_fusion_poly)),'b');
+xlabel('pixels');
+ylabel('Normalized pixel intensitiy');
+legend('MRI','US','Fused'); %, 'Fused poly');
+
+
+% showing the selected column
+xu0(:,num_col) = xu0(:,num_col) + 0.2;
+figure;
+imshow(xu0,[]); 
+title('selected column');
+xu0(:,num_col) = xu0(:,num_col) - 0.2;
+
+
+%% CNR
+%% Computing the CNR
+% CNR : 60:200,220:320 and 240:270,220:320 for synthetic data / Slope : 225:235,260
+% CNR : 170:270,270:370 and 330:430,270:370 for phantom data / Slope : 280:289,280
+
+
+% irm
+pva = x2(60:200,220:320); %pva=xm0(170:270,270:370);    
+steak = x2(240:270,220:320); %steak=xm0(330:430,270:370);
+CNR_irm = 20*log10(abs(mean2(pva) - mean2(steak))/(std2(pva)^2 + std2(steak)^2)) %#ok<*NOPTS>
+% Extraction of a 10 pixels column at the frontier between steak and glue
+% and computation of the slope on the high-resolution MRI and the denoised US
+frontiere_irm = x2(225:235,260); % xm0(280:289,280);
+coeff_irm = polyfit(225:235,frontiere_irm,1);
+slope2_irm = coeff_irm(1)
+
+% us
+pva = yu(170:270,270:370); %pva = xu0(170:270,270:370);
+steak = yu(330:430,270:370); %steak = xu0(330:430,270:370);
+CNR_us = 20*log10(abs(mean2(pva) - mean2(steak))/(std2(pva)^2 + std2(steak)^2))
+frontiere_us = yu(280:289,280);
+coeff_us = polyfit(280:289,frontiere_us,1);
+slope2_us = coeff_us(1)
+
+% polynomial
+%pva = x2(60:200,220:320);
+%steak = x2(240:270,220:320);
+pva = x2(170:270,270:370); 
+steak = x2(330:430,270:370);
+CNR_poly = 20*log10(abs(mean2(pva) - mean2(steak))/(std2(pva)^2 + std2(steak)^2))
+frontiere = x2(280:289,280); %frontiere=x2(225:235,260); % xm0(280:289,280);
+%coeff_irm = polyfit(225:235,frontiere,1);
+coeff = polyfit(280:289,frontiere,1);
+slope2 = coeff(1)

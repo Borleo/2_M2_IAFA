@@ -1,0 +1,8 @@
+User (idUser, screenName, name, description, createdAt, url, location, lang)
+Tweet (idTweet, text, createdAt, urlEnd, source, lang, nbFavorites, #idUser)
+Tweet_Url (#idTweet url, indiceStart, indiceEnd, urlExpanded)
+Tweet_Media(#idTweet, idMedia, indiceStart, indiceEnd, type, url, urlExpanded, urlMedia)
+Tweet_Hashtag(#idTweet, hahstag, indiceStart, indiceEnd)
+Tweet_Mention(#idTweet, #idUser, indiceStart, indiceEnd)
+User_Follow(#iduser, #idUserFollow)
+Tweet_retweet(#idTweet, #idUser, idRetweet, createdAt, urlEnd, source)

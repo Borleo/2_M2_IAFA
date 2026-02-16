@@ -1,0 +1,16 @@
+{
+_id:... ,
+name: "...", nbFollowers: ..., nbTweets: ..., tweets: [
+--correspondàidUser
+-- supposons qu’on le garde spour voir la différence dans les requêtes
+-- supposons qu’on ne garde pas pour voir la différence dans les requêtes
+{id: ... , text: "...", hashtags: ["...", ..., "..."]}, ...
+{id: ... , text: "...", hashtags: ["...", ..., "..."]}, ],
+followers: [
+{id:..., name: "..."},
+...,
+{id:..., name: "..."} ]
+hashtags: ["...", ..., "..."]
+termes: ["...", ..., "..."], -- tableau de termes (chaînes de caractères)
+}
+

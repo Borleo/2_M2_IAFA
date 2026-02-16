@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"name": "TPRECONSTC",
+			"path": "."
+		},
+		{
+			"name": "TPCALIBC",
+			"path": "../../TP2/TPCALIBC"
+		}
+	],
+	"settings": {
+		"workbench.colorTheme": "Visual Studio 2017 Light - C++",
+		"files.associations": {
+			"*.h": "c",
+			"*.c": "c"
+		},
+		"cmake.options.statusBarVisibility": "visible"
+	}
+}

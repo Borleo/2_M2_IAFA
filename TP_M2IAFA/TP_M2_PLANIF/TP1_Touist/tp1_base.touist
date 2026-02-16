@@ -1,0 +1,171 @@
+;;
+;; DESCRIPTION DU PROBLEME : Attraper la balle A
+;; Solveur TouIST sur https://touist.irit.fr/
+
+;; Horizon
+$length = 1
+
+;; Définition de l'état initial : 
+;;------------------------------
+;; En planification classique, l'état initial est défini comme un ensemble de fluents qui sont vrais au début du problème. 
+;; Les fluents qui ne sont pas explicitement mentionnés dans l'état initial sont considérés comme faux.
+
+;;Hypothèse du monde fermé : 
+;; ---------------------------
+;; En planification, on utilise généralement l'hypothèse du monde fermé (closed world assumption). 
+;; Cela signifie que tout ce qui n'est pas explicitement déclaré comme vrai est considéré comme faux. 
+;; Par conséquent, les fluents listés dans $I sont présupposés vrais, tandis que tous les autres sont considérés comme faux par défaut.
+
+;; Fluents, etats initiaux et finaux
+$F = [F_at_ball_ballA_roomG, F_at_ball_ballA_roomD, F_at_ball_ballB_roomG, F_at_ball_ballB_roomD,
+	 F_at_robby_roomG, F_at_robby_roomD,
+	 F_carry_ballA, F_carry_ballB,
+	 F_hand_free]
+
+$I = [F_hand_free, F_at_robby_roomG, F_at_ball_ballA_roomG, F_at_ball_ballB_roomG]
+$G = [F_carry_ballA]
+
+;; Operateurs et definitions
+$O = [A_pick_ballA_roomG, A_drop_ballA_roomG]
+
+;; Operateurs move
+
+;; Operateurs pick
+$Cond(A_pick_ballA_roomG) = [F_hand_free, F_at_ball_ballA_roomG, F_at_robby_roomG]
+$Add(A_pick_ballA_roomG) = [F_carry_ballA]
+$Del(A_pick_ballA_roomG) = [F_hand_free, F_at_ball_ballA_roomG]
+
+;; Operateurs drop
+$Cond(A_drop_ballA_roomG) = [F_carry_ballA, F_at_robby_roomG]
+$Add(A_drop_ballA_roomG) = [F_hand_free, F_at_ball_ballA_roomG]
+$Del(A_drop_ballA_roomG) = [F_carry_ballA]
+
+;; REGLES D'ENCODAGE : C'est un codage dans les espaces d'états proposé par [Mali et Kambhampati, 1999].
+;; Ce codage utilise des frame-axiomes explicatifs. On ne code pas le graphe de planification
+;; mais on cherche un plan qui d'étape en étape (et partant de l'étape initiale 0 qui ne contient que
+;; les fluents de l'état initial) permette d'obtenir les fluents du but (à l'étape length). Pour obtenir
+;; le plan-solution le plus court, on relance le solveur en incrémentant progressivement la valeur de length
+;;
+
+;; -------------------------
+;; a) COMMENTEZ CETTE REGLE 
+;; -------------------------
+
+;; Cette expression signifie : 
+;; --------------------------
+;; - Pour toutes les fluents dans l'ensemble $I, la conjonction logique des valeurs de fluent f à l'étape 0 est vraie.
+;; - En d'autres termes, toutes les fluents dans $I doivent retourner vrai (ou 1) lorsqu'ils sont appliqués à l'étape 0.
+
+bigand $f in $I:
+	$f(0)
+end
+
+;; Cette expression signifie : 
+;; --------------------------
+;; - Pour tous les fluents f dans l'ensemble $F mais pas dans $I (différence ensembliste), 
+;; - la conjonction logique des négations desc fluents f(0) doivent être vrais."
+;; - En d'autres termes, toutes les fluents f qui sont dans $F mais pas dans $I doivent retourner faux (ou 0) appliqués à l'étape 0
+
+bigand $f in $F diff $I:
+	not $f(0)
+end
+
+;;
+;; Cette expression signifie : 
+;; --------------------------
+;; Pour tous les fluents f dans l'ensemble G, la conjonction logique des valeurs de f($length) est vraie.
+;; Ici, $length représente le nombre d'étape requis à la résolution du plan. 
+;; Toutes les fluents f dans G doivent retourner vrai lorsqu'elles sont appliquées à cette valeur de longueur.
+;;
+
+bigand $f in $G:
+	$f($length)
+end
+
+;; Cette expression signifie : 
+;; --------------------------
+
+;; b) Si l'action a est appliquée à la i-ème étape, alors ses préconditions sont satisfaites à
+;; l'étape précédente i-1, et ses effets sont appliqués à la i-ème étape
+bigand $i in [1..$length]:
+	bigand $a in $O:
+		$a($i) 
+		=> (
+		(bigand $f in $Cond($a):
+			$f($i-1)
+		end)
+		and
+		(bigand $f in $Add($a):
+			$f($i)
+		end)
+		and
+		(bigand $f in $Del($a):
+			not $f($i)
+		end)
+		)
+	end
+end
+
+;; c) Un fluent qui était vrai à l'étape i-1 ne peut être supprimé à la i-ème étape que si
+;; une action l'a supprimé à cette même étape.
+;; Cette expression décrit une contrainte sur les actions et les fluents dans un problème de planification. 
+;; Voici son interprétation :
+;; --------------------------
+;; Cette formulation est typique dans les problèmes de planification pour assurer la cohérence entre les changements 
+;; d'état des fluents et les actions exécutées. 
+;; Elle garantit que chaque changement d'état est justifié par l'exécution d'une action appropriée.
+
+bigand $i in [1..$length]:
+	bigand $f in $F:
+		($f($i-1) and not $f($i)) =>
+		(bigor $a in $O when $f in $Del($a):
+			$a($i)
+		end)
+	end
+end
+
+;; e) Deux actions effectuées à la même étape du plan ne doivent pas être en concurrence
+;; sur leur préconditions et effets négatifs.
+;; ?? CODEZ CETTE REGLE (cf. sa description sur le pdf du sujet de TP) !!
+
+;; $O = [A_pick_ballA_roomG, A_drop_ballA_roomG]
+;; Conflit réside entre A_pick_ballA_roomG et A_drop_ballA_roomG réside dans leurs préconditions mutuellement exclusives :
+;;   - A_pick_ballA_roomG requiert F_hand_free
+;;   - A_drop_ballA_roomG requiert F_carry_ballA
+;; Ces deux conditions ne peuvent pas être vraies simultanément.
+
+;; Contrainte pour éviter les conflits entre actions concurrentes
+
+bigand $i in [1..$length]:
+  bigand $a1,$a2 in $O,$O when $a1 != $a2:
+    (not $a1($i) or not $a2($i)) =>
+    (bigand $f in $F:
+       ($f($Cond($a1)) and $f($Del($a2))) and
+       ($f($Cond($a2)) and $f($Del($a1)))
+    end)
+  end
+end
+
+;; ---------------------------
+;; F_at_ball_ballA_roomD(0) 0
+;; F_at_ball_ballA_roomG(0) 1
+;; F_at_ball_ballB_roomD(0) 0
+;; F_at_ball_ballB_roomG(0) 1
+;; F_at_robby_roomD(0) 0
+;; F_at_robby_roomG(0) 1
+;; F_carry_ballA(0) 0
+;; F_carry_ballB(0) 0
+;; F_hand_free(0) 1
+;;----------------------------
+;; A_drop_ballA_roomG(1) 0
+;; A_pick_ballA_roomG(1) 1
+;; F_at_ball_ballA_roomD(1) 0
+;; F_at_ball_ballA_roomG(1) 0
+;; F_at_ball_ballB_roomD(1) 0
+;; F_at_ball_ballB_roomG(1) 1
+;; F_at_robby_roomD(1) 0
+;; F_at_robby_roomG(1) 1
+;; F_carry_ballA(1) 1
+;; F_carry_ballB(1) 0
+;; F_hand_free(1)
+;; -------------------------

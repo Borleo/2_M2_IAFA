@@ -1,0 +1,65 @@
+db.users.insertMany(
+               [ { 
+                _id:2, 
+                name: "titi",
+                nbFollowers: 5,
+                tweets:[  
+                        { id: 110,  
+                        text: "Ceci est mon 1 tweet",
+                        createdate: new Date("2016-03-10 10:52:42"),
+                        hashtags:["youpi","bac à sable" ]
+                         } ,
+                         { id: 112,  
+                        text: "Ceci est mon 3 tweet",
+                        createdate: new Date("2016-04-10 10:53:42"),
+                        hashtags:["youpi","bac à sable" ]
+                         }   
+                        ]
+                }
+               , 
+		{ 
+                _id: 3, 
+                name: "tutu",
+                nbFollowers: 5,
+                tweets:[  
+                        { id: 120,  
+                        text: "Ceci est mon 1 tweet",
+                        createdate: new Date("2016-03-10 10:56:42"),
+                        hashtags:["youpi","bac à sable" ]
+                         } ,
+                         { id: 121,  
+                        text: "Ceci est mon 3 tweet",
+                        createdate: new Date("2016-04-10 10:44:42"),
+                        hashtags:["youpi","bac à sable" ]
+                         }
+		       ]   
+                    }
+               ,
+		 { 
+                _id: 4, 
+                name: "lolo",
+                nbFollowers: 5,
+                }
+		,
+                { 
+                _id: 16, 
+                name: "tata",
+                nbFollowers: 5,
+		 }
+	]
+
+)	
+
+
+
+
+db.users.updateOne({ name:"lolo"}, {$set:{ name:"mickey"}})	
+db.users.updateOne({ name:"titi"}, {$set:{  
+		tweets:[{ id: 1245,
+                        text: "Ceci est mon 1 tweet",
+                        createdate: new Date("2016-05-10 01:56:42"),
+                        hashtags:["youpi","modification bac à sable" ]
+			}]
+			}
+			})
+

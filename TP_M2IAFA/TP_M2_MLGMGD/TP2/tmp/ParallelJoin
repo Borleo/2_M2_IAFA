@@ -1,0 +1,135 @@
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+class Relation {
+    int x, y, z;
+    boolean bool;
+
+    Relation(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    Relation(int x, int y, int z, boolean bool) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.bool = bool;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ", " + z + ")";
+    }
+}
+
+class JoinTask implements Runnable {
+    private List<Relation> R;
+    private List<Relation> S;
+    private List<Relation> result;
+    private boolean evenY;
+
+    public JoinTask(List<Relation> R, List<Relation> S, List<Relation> result, boolean evenY) 
+       {
+        this.R = R;
+        this.S = S;
+        this.result = result;
+        this.evenY = evenY;
+       }
+
+    @Override
+    public void run() {
+        for (Relation r : R) {
+            System.out.println("Display r: (" + r.x + ", " + r.y + ", " +evenY+ ")");
+            if ((evenY && r.y % 2 == 0) || (!evenY && r.y % 2 != 0)) {
+                for (Relation s : S) {
+                    if (r.y == s.x) {
+                        System.out.println("Match jointure: (" + r.y + " = " + s.x +  ", " +evenY+")");
+                        synchronized (result) {
+                        System.out.println("Adding relation: (" + r.x + ", " + r.y + ", " + s.y + ", " + evenY + ")");    
+                        result.add(new Relation(r.x, r.y, s.y, evenY));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+public class ParallelJoin 
+{
+    public static void main(String[] args) throws InterruptedException 
+    {
+        // Créer une instance de OtherClass
+        Connection connection = null;
+        Statement statement = null;
+        List<Relation> S = new ArrayList<>();
+        List<Relation> R = new ArrayList<>();
+        try 
+          {
+            connection = IntializefeedJDBC.DBConnect();
+            statement = connection.createStatement() ;
+
+            // Exécuter la requête pour la table R
+            System.out.println("Données de la table R :");
+            String queryR = "SELECT  X, Y FROM R";
+            ResultSet resultSetR = statement.executeQuery(queryR);
+            System.out.println("Xr | Yr");
+            while (resultSetR.next()) 
+            {
+                int Xr = resultSetR.getInt("X"); // Remplacez par les colonnes réelles de la table R
+                int Yr = resultSetR.getInt("Y"); // Exemple : une colonne "value"
+                for (Relation r : R) 
+                {
+                        for (Relation s : S) 
+                        {
+                            if (r.y == s.x) 
+                            {
+                                System.out.println("Display r: (" + r.x + ", " + s.y + ")");
+
+                R.add(new Relation(Xr, Yr));
+               System.out.println(Xr+"  |  " +Yr);  
+                }  
+
+            // Exécuter la requête pour la table S
+            System.out.println("\nDonnées de la table S :");
+            String queryS = "SELECT  Y, Z FROM S";
+            ResultSet resultSetS = statement.executeQuery(queryS);
+            System.out.println("Ys | Zs");
+            while (resultSetS.next()) 
+                {
+                int Ys = resultSetS.getInt("Y"); // Remplacez par les colonnes réelles de la table S
+                int Zs = resultSetS.getInt("Z"); // Exemple : une colonne "description"
+                S.add(new Relation(Ys, Zs));
+                System.out.println(Ys+"  |  " +Zs); 
+                }      
+        } 
+        catch (Exception e) 
+            {
+            e.printStackTrace();
+            }
+
+        List<Relation> result = new ArrayList<>();
+
+        Thread threadEven = new Thread(new JoinTask(R, S, result, true));
+        Thread threadOdd = new Thread(new JoinTask(R, S, result, false));
+
+        threadEven.start();
+        threadOdd.start();
+
+        threadEven.join();
+        threadOdd.join();
+
+        System.out.println("Résultat de la jointure :");
+        for (Relation res : result) {
+            System.out.println("(" + res.x + ", " + res.y + ", " + res.z + ", " + res.bool + ")");
+        }
+    }
+}
+
+

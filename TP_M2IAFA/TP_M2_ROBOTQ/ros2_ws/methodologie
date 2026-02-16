@@ -1,0 +1,102 @@
+Pour un package ROS 2 **pure Python** (build type `ament_python`), le workflow typique est : 
+ - créer le package, 
+ - écrire le node Python, 
+ - le déclarer dans `setup.py`/`setup.cfg`, 
+ - compiler avec `colcon`, 
+ - puis sourcer et lancer.[1][2]
+
+## 1. Création du package Python
+
+Depuis `src` de ton workspace :
+
+```bash
+cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_python my_py_pkg
+```
+
+Cela te génère la structure `my_py_pkg/` avec `package.xml`, `setup.py`, `setup.cfg`, dossier `my_py_pkg/` (module), etc.[3][2]
+
+## 2. Écrire un node Python
+
+Dans `my_py_pkg/my_py_pkg/`, crée par exemple `my_node.py` :
+
+```python
+import rclpy
+from rclpy.node import Node
+
+class MyNode(Node):
+    def __init__(self):
+        super().__init__('my_node_name')
+        self.get_logger().info('Node started')
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = MyNode()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+```
+
+Structure recommandée : classe héritant de `Node`, fonction `main`, `rclpy.init` / `rclpy.spin` / `rclpy.shutdown`.[4][5]
+
+## 3. Déclarer l’exécutable dans setup.py
+
+Dans `setup.py`, ajoute le node dans `entry_points` :
+
+```python
+entry_points={
+    'console_scripts': [
+        'my_node = my_py_pkg.my_node:main',
+    ],
+},
+```
+
+Cela permet de lancer ton node avec `ros2 run`.[2][6]
+
+## 4. Compiler avec colcon
+
+Depuis la racine du workspace :
+
+```bash
+cd ~/ros2_ws
+colcon build --packages-select my_py_pkg
+```
+
+Ensuite, dans un nouveau terminal :
+
+```bash
+source install/setup.bash
+```
+
+La compilation installe le script au bon endroit pour qu’il soit vu par ROS 2.[7][1][2]
+
+## 5. Lancer le node
+
+Enfin, exécuter :
+
+```bash
+ros2 run my_py_pkg my_node
+```
+
+`my_py_pkg` = nom du package, `my_node` = nom déclaré dans `console_scripts`.[6][2]
+
+[1](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html)
+[2](https://roboticsbackend.com/create-a-ros2-python-package/)
+[3](https://ros2-tutorial.readthedocs.io/en/latest/create_python_package.html)
+[4](https://roboticsbackend.com/write-minimal-ros2-python-node/)
+[5](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.html)
+[6](https://robotisim.com/python-ros2-node-begginer-friendly/)
+[7](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html)
+[8](https://www.theconstruct.ai/comment-creer-des-bibliotheques-ros2-python-french-tutorial/)
+[9](https://www.reddit.com/r/ROS/comments/1ij5vfg/creating_actions_in_ros2_ament_python_package/)
+[10](https://answers.ros.org/question/404892)
+[11](https://docs.ros.org/en/eloquent/Tutorials/Creating-Your-First-ROS2-Package.html)
+[12](https://robotisim.com/custom-libraries-to-ros2-python-package/)
+[13](https://www.youtube.com/watch?v=Pu_GPCvbuY4)
+[14](https://discourse.openrobotics.org/t/status-of-colcon-building-standards-based-python-packages/40578)
+[15](https://github.com/ros2/ros2cli/issues/833)
+[16](https://www.youtube.com/watch?v=KLvUMtYI_Ag)
+[17](https://docs.ros.org/en/foxy/How-To-Guides/Ament-CMake-Python-Documentation.html)
+[18](https://ros2-tutorial.readthedocs.io/en/latest/python_node_explained.html)
+[19](https://colcon.readthedocs.io/en/released/user/installation.html)
+[20](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.html)

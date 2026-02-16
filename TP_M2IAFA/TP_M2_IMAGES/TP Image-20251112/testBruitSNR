@@ -1,0 +1,5 @@
+" Fonction Test ajout de bruit"
+bruit_norm= Mnoise.astype(np.float64) # Mnoise = bruit genere
+blur = My_Conv.astype(np.float64) # My_Conv = image convoluee mais non bruitee
+test = 10*(np.log10(np.sum(np.sum(blur**2)))-np.log10(np.sum(np.sum(bruit_norm**2))))
+print(test) # Doit etre +-= RSB

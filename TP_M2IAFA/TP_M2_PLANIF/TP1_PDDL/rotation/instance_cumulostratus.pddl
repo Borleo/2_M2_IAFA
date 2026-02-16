@@ -1,0 +1,56 @@
+(define (problem nuage)
+
+  (:domain rotation)
+
+  (:objects
+    p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 - position
+    c  u  m  u  l  o  s  t  r  a   t   u   s   - value
+  )
+
+  (:init
+    (next p1 p2)
+    (next p2 p3)
+    (next p3 p4)
+    (next p4 p5)
+    (next p5 p6)
+    (next p6 p7)
+    (next p7 p8)
+    (next p8 p9)
+    (next p9 p10)
+    (next p10 p11)
+    (next p11 p12)
+    (next p12 p13)
+    (occurence c p1)
+    (occurence u p2)
+    (occurence m p3)
+    (occurence u p4)
+    (occurence l p5)
+    (occurence o p6)
+    (occurence s p7)
+    (occurence t p8)
+    (occurence r p9)
+    (occurence a p10)
+    (occurence t p11)
+    (occurence u p12)
+    (occurence s p13)
+    (= (total-cost) 0)
+  )
+
+  (:goal
+    (and
+    (occurence s p1)
+    (occurence t p2)
+    (occurence r p3)
+    (occurence a p4)
+    (occurence t p5)
+    (occurence o p6)
+    (occurence c p7)
+    (occurence u p8)
+    (occurence m p9)
+    (occurence u p10)
+    (occurence l p11)
+    (occurence u p12)
+    (occurence s p13)
+  ))
+  (:metric minimize (total-cost))
+)

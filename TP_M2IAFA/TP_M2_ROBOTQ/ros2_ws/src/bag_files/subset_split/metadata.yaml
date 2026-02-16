@@ -1,0 +1,102 @@
+rosbag2_bagfile_information:
+  version: 5
+  storage_identifier: sqlite3
+  duration:
+    nanoseconds: 52308460849
+  starting_time:
+    nanoseconds_since_epoch: 1764595213441396914
+  message_count: 3314
+  topics_with_message_count:
+    - topic_metadata:
+        name: /turtle1/pose
+        type: turtlesim/msg/Pose
+        serialization_format: cdr
+        offered_qos_profiles: "- history: 1\n  depth: 7\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+      message_count: 3269
+    - topic_metadata:
+        name: /turtle1/cmd_vel
+        type: geometry_msgs/msg/Twist
+        serialization_format: cdr
+        offered_qos_profiles: "- history: 1\n  depth: 1\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+      message_count: 45
+  compression_format: ""
+  compression_mode: ""
+  relative_file_paths:
+    - subset_split_0.db3
+    - subset_split_1.db3
+    - subset_split_2.db3
+    - subset_split_3.db3
+    - subset_split_4.db3
+    - subset_split_5.db3
+    - subset_split_6.db3
+    - subset_split_7.db3
+    - subset_split_8.db3
+    - subset_split_9.db3
+    - subset_split_10.db3
+  files:
+    - path: subset_split_0.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595213441396914
+      duration:
+        nanoseconds: 4996740965
+      message_count: 312
+    - path: subset_split_1.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595218453231244
+      duration:
+        nanoseconds: 4992221764
+      message_count: 313
+    - path: subset_split_2.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595223461854425
+      duration:
+        nanoseconds: 4991678468
+      message_count: 313
+    - path: subset_split_3.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595228469809226
+      duration:
+        nanoseconds: 4992418515
+      message_count: 313
+    - path: subset_split_4.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595233484768913
+      duration:
+        nanoseconds: 4984519080
+      message_count: 313
+    - path: subset_split_5.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595238486106746
+      duration:
+        nanoseconds: 4992280432
+      message_count: 336
+    - path: subset_split_6.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595243493625002
+      duration:
+        nanoseconds: 4991903762
+      message_count: 335
+    - path: subset_split_7.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595248501861722
+      duration:
+        nanoseconds: 4991668301
+      message_count: 313
+    - path: subset_split_8.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595253509988773
+      duration:
+        nanoseconds: 4992057972
+      message_count: 313
+    - path: subset_split_9.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595258518274368
+      duration:
+        nanoseconds: 4994423781
+      message_count: 313
+    - path: subset_split_10.db3
+      starting_time:
+        nanoseconds_since_epoch: 1764595263530644035
+      duration:
+        nanoseconds: 2219213728
+      message_count: 140
