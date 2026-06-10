@@ -1,0 +1,45 @@
+name: DDFM_311
+channels:
+  - conda-forge
+dependencies:
+  # Version de Python maintenue
+  - python=3.11
+
+  # Base scientifique / numérique
+  - numpy
+  - scipy
+  - pandas
+  - scikit-image
+  - pywavelets
+  - sympy
+
+  # Visualisation / plotting
+  - matplotlib
+  - pillow
+
+  # OpenCV et codecs (conda-forge)
+  - opencv
+  - ffmpeg
+  - openexr
+
+  # Jupyter / notebook
+  - ipykernel
+  - jupyterlab
+  - notebook
+  - nbconvert
+  - nbformat
+
+  # Divers utilitaires
+  - requests
+  - fsspec
+  - imageio
+  - tifffile
+  - networkx
+  - tqdm
+
+  # Gestion pip et packages non gérés par conda-forge
+  - pip
+  - pip:
+      - torch==2.1.0
+      - torchvision==0.16.0
+      - lpips==0.1.4
